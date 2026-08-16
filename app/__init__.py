@@ -1,0 +1,2 @@
+"""Career Copilot application package."""
+

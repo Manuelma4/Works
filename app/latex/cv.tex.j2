@@ -1,0 +1,128 @@
+\documentclass[9pt,a4paper]{article}
+\usepackage[a4paper,top=0.28in,bottom=0.23in,left=0.38in,right=0.38in]{geometry}
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Raleway-Light.otf}[
+  Path={{ font_dir }},
+  UprightFont=Raleway-Light.otf,
+  ItalicFont=Raleway-LightItalic.otf,
+  BoldFont=Raleway-Bold.otf,
+  BoldItalicFont=Raleway-BoldItalic.otf
+]
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{fontawesome5}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{0.22in}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\emergencystretch=2em
+\definecolor{accent}{HTML}{250746}
+\definecolor{body}{HTML}{333333}
+\color{body}
+
+\newcommand{\cvsection}[1]{
+  \vspace{ {{- 7.0 + section_extra_pt -}} pt}{\color{accent}\bfseries\fontsize{10.5}{11}\selectfont #1}\par
+  \vspace{0.8pt}\color{black}\hrule height 1.2pt\vspace{1.8pt}
+}
+\newcommand{\entrytitle}[2]{
+  \noindent\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{0.13in}@{}X>{\raggedleft\arraybackslash}p{1.52in}@{}}
+  \raisebox{0.2ex}{\tikz\fill[black] (0,0) circle (2.6pt);} &
+  {\bfseries\fontsize{9.7}{10.4}\selectfont #1} &
+  {\itshape\fontsize{8.6}{9.0}\selectfont #2}
+  \end{tabularx}\vspace{-8.5pt}
+}
+\newcommand{\educationtitle}[2]{
+  \noindent\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{0.13in}@{}X>{\raggedleft\arraybackslash}p{1.95in}@{}}
+  \raisebox{0.2ex}{\tikz\fill[black] (0,0) circle (2.6pt);} &
+  {\bfseries\fontsize{9.7}{10.4}\selectfont #1} &
+  {\itshape\fontsize{8.1}{8.7}\selectfont #2}
+  \end{tabularx}\vspace{-9pt}
+}
+\newenvironment{tightitems}{
+  \begin{itemize}[leftmargin=0.25in,labelsep=0.07in,itemsep=-0.25pt,topsep=-0.8pt,parsep=0pt,partopsep=0pt,label=\raisebox{0.35ex}{\tiny$\bullet$}]
+  \fontsize{8.7}{9.7}\selectfont\raggedright
+}{\end{itemize}\vspace{-1.4pt}}
+
+{% set labels = {
+  'en': {'education':'Education','experience':'Work experience','projects':'Academic and Professional Projects','skills':'Skills','languages':'Languages'},
+  'fr': {'education':'Éducation','experience':'Expérience professionnelle','projects':'Projets académiques et professionnels','skills':'Compétences','languages':'Langues'},
+  'es': {'education':'Educación','experience':'Experiencia profesional','projects':'Proyectos académicos y profesionales','skills':'Competencias','languages':'Idiomas'}
+} %}
+\begin{document}
+\begin{center}
+  {\fontsize{12.7}{13.4}\selectfont {{ person.name|tex }}}\\[-1pt]
+  {\color{accent}\bfseries\fontsize{12}{12.5}\selectfont {{ bundle.cv.headline|tex }}}\\[5pt]
+  {\fontsize{8.8}{9.3}\selectfont
+  \faEnvelope\ \href{mailto:{{ person.email|tex }}}{{ person.email|tex }}
+  \hspace{0.20in}\textbar\hspace{0.20in}
+  \faPhone\ {{ person.phoneDisplay|tex }}
+  \hspace{0.20in}\textbar\hspace{0.20in}
+  \faMapMarker*\ {{ person.location[language]|tex }}
+  \hspace{0.20in}\textbar\hspace{0.20in}
+  \faGithub\ \href{ {{- person.githubUrl|tex -}} }{@{{ person.githubUser|tex }}}
+  \hspace{0.20in}\textbar\hspace{0.20in}
+  \faLinkedin\ \href{ {{- person.linkedinUrl|tex -}} }{@{{ person.linkedinUser|tex }}}
+  }
+\end{center}
+\vspace{-4pt}
+
+\cvsection{ {{- labels[language].education|tex -}} }
+{% for item in bundle.cv.education %}
+\educationtitle{ {{- item.organization|tex }} — {\mdseries {{ item.degree|tex -}} } }{ {{- item.place.split(',')[0]|tex }} · {{ item.date|tex -}} }
+{% if item.bullets %}
+\begin{tightitems}
+{% for bullet in item.bullets %}\item {{ bullet|tex }}
+{% endfor %}\end{tightitems}
+{% endif %}
+{% if not loop.last %}\vspace{1pt}{% endif %}
+{% endfor %}
+
+\cvsection{ {{- labels[language].experience|tex -}} }
+{% for item in bundle.cv.experiences %}
+\entrytitle{ {{- item.title|tex }}, {{ item.organization|tex -}} }{ {{- item.date|tex -}} }
+\begin{tightitems}
+{% for bullet in item.bullets %}\item {{ bullet|tex }}
+{% endfor %}\end{tightitems}
+{% if not loop.last %}\vspace{0.5pt}{% endif %}
+{% endfor %}
+
+{% if bundle.cv.projects %}
+\cvsection{ {{- labels[language].projects|tex -}} }
+{% for item in bundle.cv.projects %}
+\entrytitle{ {{- item.title|tex }}{% if item.organization %}, {{ item.organization|tex }}{% endif -%} }{ {{- item.date|tex -}} }
+\begin{tightitems}
+{% for bullet in item.bullets %}\item {{ bullet|tex }}
+{% endfor %}\end{tightitems}
+{% endfor %}
+{% endif %}
+
+\cvsection{ {{- labels[language].skills|tex -}} }
+\vspace{1.5pt}
+\begin{minipage}{\linewidth}
+\begin{multicols}{3}
+\raggedcolumns
+{% for group in bundle.cv.skill_groups %}
+\begin{minipage}{\columnwidth}
+{\bfseries\fontsize{8.5}{9.2}\selectfont {{ group.name|tex }}}\\[-1pt]
+{\raggedright\fontsize{7.7}{8.8}\selectfont {{ group['items']|join(', ')|tex }}\par}\vspace{5pt}
+\end{minipage}\par
+{% endfor %}
+\end{multicols}
+\end{minipage}
+\vspace{1pt}
+
+\cvsection{ {{- labels[language].languages|tex -}} }
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\bfseries}l X}@{}}
+{% for item in profile.languages %}
+{{ item.name[language]|tex }} & {\mdseries {{ item.level[language]|tex }}}{% if not loop.last %} & {% endif %}
+{% endfor %}
+\end{tabularx}
+\end{document}

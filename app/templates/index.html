@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }}</title>
+  <meta name="description" content="Generador automático de candidaturas de Manuel David Maya Rosero">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard" data-nav="dashboard" aria-label="Career Copilot">
+        <span class="brand-mark">MM</span>
+        <span><strong>Career</strong><small>Copilot</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">⌂</span><span>Seguimiento</span>
+        </button>
+        <button class="nav-item" data-view="new-application">
+          <span class="nav-icon">＋</span><span>Nueva candidatura</span>
+        </button>
+        <button class="nav-item" data-view="profile">
+          <span class="nav-icon">◇</span><span>Mi background</span>
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="engine-status {{ 'online' if ai_configured else 'local' }}">
+          <span class="status-dot"></span>
+          <div>
+            <strong>{{ 'IA configurada' if ai_configured else 'Modo local' }}</strong>
+            <small>{{ 'Generación estructurada' if ai_configured else 'Añade OPENAI_API_KEY' }}</small>
+          </div>
+        </div>
+        <p>Tu perfil profesional es la única fuente de verdad.</p>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menú">☰</button>
+        <div>
+          <p class="eyebrow" id="page-eyebrow">Candidaturas</p>
+          <h1 id="page-title">Tu búsqueda, en perspectiva</h1>
+        </div>
+        <div class="top-actions">
+          <a class="button secondary" href="/api/export.xlsx">Descargar Excel</a>
+          <button class="button primary" data-view-target="new-application">Nueva oferta</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="metric-grid" id="metrics"></div>
+        <section class="panel applications-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Pipeline</p>
+              <h2>Candidaturas</h2>
+            </div>
+            <div class="table-tools">
+              <label class="search-box"><span>⌕</span><input id="application-search" type="search" placeholder="Empresa o puesto"></label>
+              <select id="status-filter" aria-label="Filtrar por estado">
+                <option value="">Todos los estados</option>
+                {% for status in statuses %}<option value="{{ status }}">{{ status }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Empresa y puesto</th><th>Afinidad</th><th>Estado</th><th>Fecha</th><th>Documentos</th><th></th></tr></thead>
+              <tbody id="applications-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="applications-empty" hidden>
+            <span>✦</span>
+            <h3>Aún no hay candidaturas</h3>
+            <p>Envía tu primera oferta y se generarán automáticamente el CV, la carta y el registro.</p>
+            <button class="button primary" data-view-target="new-application">Añadir una oferta</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-new-application">
+        <div class="two-column">
+          <section class="panel offer-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">Generación automática</p><h2>Envía una oferta</h2></div>
+              <span class="step-badge">01</span>
+            </div>
+            <form id="offer-form">
+              <label>Enlace de la oferta <span>opcional si pegas el texto</span>
+                <input type="url" name="url" placeholder="https://empresa.com/jobs/data-engineer">
+              </label>
+              <div class="form-row">
+                <label>Fuente
+                  <select name="source">
+                    <option value="">Seleccionar</option><option>LinkedIn</option><option>Welcome to the Jungle</option>
+                    <option>APEC</option><option>Indeed</option><option>Sitio de la empresa</option><option>Referido</option><option>Otra</option>
+                  </select>
+                </label>
+                <label>Idioma de salida
+                  <select name="preferred_language">
+                    <option value="auto">Detectar automáticamente</option><option value="fr">Francés</option>
+                    <option value="en">Inglés</option><option value="es">Español</option>
+                  </select>
+                </label>
+              </div>
+              <label>Texto de la oferta <span>recomendado para LinkedIn y páginas con login</span>
+                <textarea name="offer_text" rows="14" placeholder="Pega aquí la descripción completa del puesto..."></textarea>
+              </label>
+              <div class="generation-note">
+                <span>✓</span><p>El sistema selecciona automáticamente tecnologías, experiencias y proyectos. No modifica ni inventa hechos del perfil maestro.</p>
+              </div>
+              <button class="button primary wide" type="submit" id="generate-button">
+                <span>Generar candidatura</span><span>→</span>
+              </button>
+            </form>
+          </section>
+          <aside class="process-card">
+            <p class="eyebrow">Qué ocurre después</p>
+            <ol>
+              <li><span>1</span><div><strong>Analiza la oferta</strong><p>Idioma, requisitos, tecnologías y palabras ATS.</p></div></li>
+              <li><span>2</span><div><strong>Cruza tu background</strong><p>Usa las experiencias y hechos verificados del perfil.</p></div></li>
+              <li><span>3</span><div><strong>Compila en LaTeX</strong><p>CV de una página y carta listos para descargar.</p></div></li>
+              <li><span>4</span><div><strong>Actualiza el seguimiento</strong><p>Registra la candidatura y alimenta el Excel.</p></div></li>
+            </ol>
+          </aside>
+        </div>
+        <section class="panel generation-result" id="generation-result" hidden></section>
+      </section>
+
+      <section class="view" id="view-profile">
+        <div class="profile-intro">
+          <div><p class="eyebrow">Fuente de verdad</p><h2>Todo tu background profesional</h2><p>Importado automáticamente desde tu portafolio. Los cambios de aquí se usarán en futuras candidaturas; no editan documentos ya generados.</p></div>
+          <div class="profile-actions">
+            <button class="button secondary" id="toggle-advanced">JSON avanzado</button>
+            <button class="button primary" id="save-profile">Guardar cambios</button>
+          </div>
+        </div>
+        <div id="profile-loading" class="loading-card">Cargando perfil…</div>
+        <div id="profile-editor"></div>
+        <section class="panel advanced-editor" id="advanced-editor" hidden>
+          <div class="panel-head"><div><p class="eyebrow">Edición completa</p><h2>Datos avanzados</h2></div><button class="text-button danger" id="reset-profile">Restaurar desde el portafolio</button></div>
+          <p>Edita aquí proyectos, certificaciones, preferencias o cualquier campo no mostrado en los formularios.</p>
+          <textarea id="profile-json" rows="24" spellcheck="false"></textarea>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="detail-drawer" id="detail-drawer" aria-hidden="true">
+    <button class="drawer-close" id="drawer-close" aria-label="Cerrar">×</button>
+    <div id="drawer-content"></div>
+  </aside>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script>window.CAREER_CONFIG = {{ {'statuses': statuses, 'aiConfigured': ai_configured}|tojson }};</script>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
+

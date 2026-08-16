@@ -1,0 +1,55 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,top=0.70in,bottom=0.70in,left=0.88in,right=0.88in]{geometry}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Raleway-Light.otf}[
+  Path={{ font_dir }},
+  UprightFont=Raleway-Light.otf,
+  ItalicFont=Raleway-LightItalic.otf,
+  BoldFont=Raleway-Bold.otf,
+  BoldItalicFont=Raleway-BoldItalic.otf
+]
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{ {{- 9.0 + letter_extra_pt -}} pt}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\emergencystretch=2em
+\definecolor{accent}{HTML}{250746}
+
+{% set months = {
+  'en':['January','February','March','April','May','June','July','August','September','October','November','December'],
+  'fr':['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+  'es':['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+} %}
+\begin{document}
+{\bfseries\fontsize{13}{15}\selectfont {{ person.name|tex }}}\\
+\href{mailto:{{ person.email|tex }}}{{ person.email|tex }}\\
+{{ person.location[language]|tex }}
+
+\vspace{0.25in}
+\hfill {{ today.day }} {{ months[language][today.month - 1]|tex }} {{ today.year }}
+
+\vspace{0.12in}
+{\bfseries\color{accent} {{ bundle.letter.subject|tex }}}
+
+{{ bundle.letter.greeting|tex }}
+
+{% for paragraph in bundle.letter.paragraphs %}
+{{ paragraph|tex }}
+
+{% endfor %}
+{{ bundle.letter.closing|tex }}
+
+{% if signature_path %}
+\vspace{0.06in}
+\includegraphics[width=2.45in,height=0.72in,keepaspectratio]{ {{- signature_path -}} }\\[-5pt]
+{% else %}
+\vspace{0.32in}
+\rule{2.1in}{0.4pt}\\[-1pt]
+{% endif %}
+{\bfseries {{ person.name|tex }}}
+\end{document}
